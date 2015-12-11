@@ -1,0 +1,20 @@
+.line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.line.bids {
+  stroke: red;
+}
+
+.line.asks {
+  stroke: green;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
