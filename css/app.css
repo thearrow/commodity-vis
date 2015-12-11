@@ -1,6 +1,10 @@
-.chart {
+.chart, .toolbar {
   width: 1000px;
   margin: 0 auto;
+}
+
+.toolbar {
+  padding: 5px 50px;
 }
 
 .line {

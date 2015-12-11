@@ -1,6 +1,6 @@
 /* global d3 */
 
-var margin = {top: 20, right: 20, bottom: 30, left: 50};
+var margin = {top: 5, right: 20, bottom: 30, left: 50};
 var width = 1000 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
 var timeFormatter = d3.time.format('%Y-%m-%d %H:%M:%S');
@@ -36,6 +36,18 @@ var line = d3.svg.line()
 var zoom = d3.behavior.zoom()
     .on('zoom', zoomed);
 
+var toolbar = d3.select('.chart').append('div')
+  .attr('class', 'toolbar');
+
+var buttonRawData = toolbar.append('button')
+  .text('Raw Data')
+  .on('click', groupNone);
+
+var buttonDailyAvg = toolbar.append('button')
+  .text('Daily Averages')
+  .attr('disabled', true)
+  .on('click', groupDay);
+
 var svg = d3.select('.chart').append('svg')
   .call(zoom)
     .attr('width', width + margin.left + margin.right)
@@ -48,6 +60,30 @@ svg.append('defs').append('clipPath')
   .append('rect')
     .attr('width', width)
     .attr('height', height);
+
+function groupNone() {
+  buttonDailyAvg.attr('disabled', null);
+  buttonRawData.attr('disabled', true);
+
+  svg.select('.line.asks')
+    .datum(asks)
+    .attr('d', line);
+  svg.select('.line.bids')
+    .datum(bids)
+    .attr('d', line);
+}
+
+function groupDay() {
+  buttonDailyAvg.attr('disabled', true);
+  buttonRawData.attr('disabled', null);
+
+  svg.select('.line.asks')
+    .datum(asksByDay)
+    .attr('d', line);
+  svg.select('.line.bids')
+    .datum(bidsByDay)
+    .attr('d', line);
+}
 
 function zoomed() {
   svg.select('.x.axis').call(xAxis);
