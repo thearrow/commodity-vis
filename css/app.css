@@ -1,3 +1,8 @@
+.chart {
+  width: 1000px;
+  margin: 0 auto;
+}
+
 .line {
   fill: none;
   stroke: #000;

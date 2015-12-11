@@ -3,6 +3,12 @@
 var margin = {top: 20, right: 20, bottom: 30, left: 50};
 var width = 1000 - margin.left - margin.right;
 var height = 500 - margin.top - margin.bottom;
+var timeFormatter = d3.time.format('%Y-%m-%d %H:%M:%S');
+var dayFormatter = d3.time.format('%Y-%m-%d');
+var asks = [];
+var asksByDay;
+var bids = [];
+var bidsByDay;
 
 var x = d3.time.scale()
   .range([0, width]);
@@ -19,8 +25,12 @@ var yAxis = d3.svg.axis()
   .orient('left');
 
 var line = d3.svg.line()
-  .x(function(d) { return x(d.time); })
-  .y(function(d) { return y(d.value); })
+  .x(function(d) {
+    return x(d.time);
+  })
+  .y(function(d) {
+    return y(d.value);
+  })
   .interpolate('step');
 
 var zoom = d3.behavior.zoom()
@@ -33,26 +43,45 @@ var svg = d3.select('.chart').append('svg')
   .append('g')
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+svg.append('defs').append('clipPath')
+  .attr('id', 'clip')
+  .append('rect')
+    .attr('width', width)
+    .attr('height', height);
+
 function zoomed() {
   svg.select('.x.axis').call(xAxis);
-  svg.select('.y.axis').call(yAxis);
   svg.selectAll('path.line').attr('d', line);
 }
 
 function sortByTime(a, b) {
-  // Dates will be cast to numbers automagically:
   return a.time - b.time;
+}
+
+function dailyAverages(data) {
+  var nest = d3.nest()
+    .key(function(d) {
+      return dayFormatter(d.time);
+    })
+    .rollup(function(d) {
+      return d3.mean(d, function(d) {
+        return d.value;
+      });
+    })
+    .entries(data);
+
+  nest.forEach(function(d) {
+    d.time = dayFormatter.parse(d.key);
+    d.value = Number(d.values);
+  });
+
+  return nest;
 }
 
 d3.csv('../data.csv', function(error, data) {
   if (error) {
     throw error;
   }
-
-  var timeFormatter = d3.time.format('%Y-%m-%d %H:%M:%S');
-  var dayFormatter = d3.time.format('%Y-%m-%d');
-  var bids = [];
-  var asks = [];
 
   data.forEach(function(datum) {
     datum.time = timeFormatter.parse(datum.time);
@@ -64,33 +93,19 @@ d3.csv('../data.csv', function(error, data) {
     }
   });
 
-  data = data.sort(sortByTime);
   asks = asks.sort(sortByTime);
+  asksByDay = dailyAverages(asks);
+
   bids = bids.sort(sortByTime);
+  bidsByDay = dailyAverages(bids);
 
-  var asksNest = d3.nest()
-    .key(function(d) { return dayFormatter(d.time); })
-    .rollup(function(d) { return d3.mean(d, function(d) { return d.value; }); })
-    .entries(asks);
-
-  var bidsNest = d3.nest()
-    .key(function(d) { return dayFormatter(d.time); })
-    .rollup(function(d) { return d3.mean(d, function(d) { return d.value; }); })
-    .entries(bids);
-
-  asksNest.forEach(function (d) {
-    d.time = dayFormatter.parse(d.key);
-    d.value = Number(d.values);
-  });
-
-  bidsNest.forEach(function (d) {
-    d.time = dayFormatter.parse(d.key);
-    d.value = Number(d.values);
-  });
-
-  x.domain(d3.extent(data, function(d) { return d.time; }));
+  x.domain(d3.extent(data, function(d) {
+    return d.time;
+  }));
   zoom.x(x);
-  y.domain(d3.extent(data, function(d) { return d.value; }));
+  y.domain(d3.extent(data, function(d) {
+    return d.value;
+  }));
 
   svg.append('g')
     .attr('class', 'x axis')
@@ -108,14 +123,14 @@ d3.csv('../data.csv', function(error, data) {
     .text('Price ($/ton)');
 
   svg.append('path')
-    .datum(asksNest)
+    .datum(asksByDay)
     .attr('class', 'line asks')
-    .attr('d', line);
+    .attr('d', line)
+    .attr('clip-path', 'url(#clip)');
 
   svg.append('path')
-    .datum(bidsNest)
+    .datum(bidsByDay)
     .attr('class', 'line bids')
-    .attr('d', line);
-
-  console.log(data);
+    .attr('d', line)
+    .attr('clip-path', 'url(#clip)');
 });
