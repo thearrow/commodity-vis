@@ -3,8 +3,41 @@
   margin: 0 auto;
 }
 
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.path,.area {
+  pointer-events: none;
+}
+
 .toolbar {
   padding: 5px 50px;
+}
+
+.tooltip {
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 10pt;
+  margin-left: 100px;
+}
+
+.tooltip-line {
+  stroke: black;
+  opacity: .2;
+}
+
+.legend {
+  display: inline-block;
+  font-family: sans-serif;
+  font-size: 10pt;
+  margin-left: 100px;
+}
+
+.legend > div {
+  display: inline-block;
+  margin: 0 20px;
 }
 
 .line {
@@ -13,12 +46,25 @@
   stroke-width: 1.5px;
 }
 
-.line.bids {
-  stroke: red;
+.bids {
+  stroke: green;
+  color: green;
 }
 
-.line.asks {
-  stroke: green;
+.asks {
+  stroke: red;
+  color: red;
+}
+
+.area {
+  stroke: none;
+  opacity: .1;
+}
+
+.axis {
+  font-family: sans-serif;
+  font-weight: normal;
+  font-size: 10pt;
 }
 
 .axis path,
