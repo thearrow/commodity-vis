@@ -232,7 +232,7 @@ function dailyAverages(data) {
   return nest;
 }
 
-d3.csv('../data.csv', function(error, data) {
+d3.csv('../commodity-vis/data.csv', function(error, data) {
   if (error) {
     throw error;
   }
